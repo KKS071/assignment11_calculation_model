@@ -84,7 +84,7 @@ def test_calculator_subtract(page, fastapi_server):
     page.click('button:text("Subtract")')
     #page.wait_for_selector('#result:has-text("Calculation Result: 6")')
     #assert page.inner_text('#result') == 'Calculation Result: 6'
-    expect(page.locator('#result')).to_have_text('Calculation Result: 6')
+    expect(page.locator('#result')).to_have_text('Result: 6')
 
 @pytest.mark.e2e
 def test_calculator_multiply(page, fastapi_server):
@@ -94,5 +94,5 @@ def test_calculator_multiply(page, fastapi_server):
     page.click('button:text("Multiply")')
     #page.wait_for_selector('#result:has-text("Calculation Result: 40")')
     #assert page.inner_text('#result') == 'Calculation Result: 40'
-    expect(page.locator('#result')).to_have_text('Calculation Result: 40')
+    expect(page.locator('#result')).to_have_text('Result: 40')
 

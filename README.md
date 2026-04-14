@@ -1,264 +1,156 @@
-# 📦 Project Setup
+# Module 11 — Calculation Model with Polymorphism & Factory Pattern
+
+**GitHub:** https://github.com/KKS071/assignment11_calculation_model  
+**Docker Hub:** https://hub.docker.com/r/kks59/601_module11
 
 ---
 
-# 🧩 1. Install Homebrew (Mac Only)
+## Project Overview
 
-> Skip this step if you're on Windows.
+This project implements a **FastAPI calculator** backed by:
 
-Homebrew is a package manager for macOS.  
-You’ll use it to easily install Git, Python, Docker, etc.
+- **SQLAlchemy polymorphic models** — `Addition`, `Subtraction`, `Multiplication`, and `Division` all inherit from a shared `Calculation` base stored in one `calculations` table (single-table inheritance).
+- **Pydantic v2 schemas** — validate and serialize all API input/output with custom field and model validators.
+- **Factory pattern** — `Calculation.create(type, user_id, inputs)` returns the correct subclass without the caller needing to import individual classes.
+- **FastAPI endpoints** — `/add`, `/subtract`, `/multiply`, `/divide` with proper error handling.
+- **Playwright E2E tests**, **integration tests**, and **unit tests** targeting 100% coverage.
 
-**Install Homebrew:**
+### How polymorphism works here
 
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
+The `Calculation` base class is mapped to the `calculations` table with `polymorphic_on="type"`. Each subclass (`Addition`, `Subtraction`, etc.) sets its own `polymorphic_identity`. When SQLAlchemy loads a row it reads the `type` column and automatically returns the correct subclass instance. Every subclass overrides `get_result()` with its own logic, so calling `calc.get_result()` always does the right thing regardless of which subclass you have.
 
-**Verify Homebrew:**
+### How the factory pattern works here
 
-```bash
-brew --version
-```
-
-If you see a version number, you're good to go.
+`Calculation.create(calculation_type, user_id, inputs)` is a classmethod that maps type strings to subclass constructors and returns the matching instance. Adding a new operation type only requires a new subclass and one dict entry — nothing else changes.
 
 ---
 
-# 🧩 2. Install and Configure Git
+## How to Run the App
 
-## Install Git
-
-- **MacOS (using Homebrew)**
+### Local
 
 ```bash
-brew install git
-```
+git clone https://github.com/KKS071/assignment11_calculation_model.git
+cd assignment11_calculation_model
 
-- **Windows**
-
-Download and install [Git for Windows](https://git-scm.com/download/win).  
-Accept the default options during installation.
-
-**Verify Git:**
-
-```bash
-git --version
-```
-
----
-
-## Configure Git Globals
-
-Set your name and email so Git tracks your commits properly:
-
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "your_email@example.com"
-```
-
-Confirm the settings:
-
-```bash
-git config --list
-```
-
----
-
-## Generate SSH Keys and Connect to GitHub
-
-> Only do this once per machine.
-
-1. Generate a new SSH key:
-
-```bash
-ssh-keygen -t ed25519 -C "your_email@example.com"
-```
-
-(Press Enter at all prompts.)
-
-2. Start the SSH agent:
-
-```bash
-eval "$(ssh-agent -s)"
-```
-
-3. Add the SSH private key to the agent:
-
-```bash
-ssh-add ~/.ssh/id_ed25519
-```
-
-4. Copy your SSH public key:
-
-- **Mac/Linux:**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | pbcopy
-```
-
-- **Windows (Git Bash):**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | clip
-```
-
-5. Add the key to your GitHub account:
-   - Go to [GitHub SSH Settings](https://github.com/settings/keys)
-   - Click **New SSH Key**, paste the key, save.
-
-6. Test the connection:
-
-```bash
-ssh -T git@github.com
-```
-
-You should see a success message.
-
----
-
-# 🧩 3. Clone the Repository
-
-Now you can safely clone the course project:
-
-```bash
-git clone <repository-url>
-cd <repository-directory>
-```
-
----
-
-# 🛠️ 4. Install Python 3.10+
-
-## Install Python
-
-- **MacOS (Homebrew)**
-
-```bash
-brew install python
-```
-
-- **Windows**
-
-Download and install [Python for Windows](https://www.python.org/downloads/).  
-✅ Make sure you **check the box** `Add Python to PATH` during setup.
-
-**Verify Python:**
-
-```bash
-python3 --version
-```
-or
-```bash
-python --version
-```
-
----
-
-## Create and Activate a Virtual Environment
-
-(Optional but recommended)
-
-```bash
 python3 -m venv venv
-source venv/bin/activate   # Mac/Linux
-venv\Scripts\activate.bat  # Windows
-```
+source venv/bin/activate       # Mac/Linux
+# venv\Scripts\activate.bat   # Windows
 
-### Install Required Packages
-
-```bash
 pip install -r requirements.txt
-```
-
----
-
-# 🐳 5. (Optional) Docker Setup
-
-> Skip if Docker isn't used in this module.
-
-## Install Docker
-
-- [Install Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)
-- [Install Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
-
-## Build Docker Image
-
-```bash
-docker build -t <image-name> .
-```
-
-## Run Docker Container
-
-```bash
-docker run -it --rm <image-name>
-```
-
----
-
-# 🚀 6. Running the Project
-
-- **Without Docker**:
-
-```bash
 python main.py
 ```
 
-(or update this if the main script is different.)
+App is available at `http://127.0.0.1:8000`.
 
-- **With Docker**:
+### Docker
 
 ```bash
-docker run -it --rm <image-name>
+# Pull from Docker Hub
+docker pull kks59/601_module11
+
+# Run the container
+docker run -p 8000:8000 kks59/601_module11
+```
+
+### Build locally with Docker
+
+```bash
+docker build -t module11 .
+docker run -p 8000:8000 module11
 ```
 
 ---
 
-# 📝 7. Submission Instructions
+## How to Run Tests
 
-After finishing your work:
+### All tests with coverage
 
 ```bash
-git add .
-git commit -m "Complete Module X"
-git push origin main
+pytest --cov=app --cov-report=term-missing
 ```
 
-Then submit the GitHub repository link as instructed.
+### Unit tests only
+
+```bash
+pytest tests/unit/
+```
+
+### Integration tests only
+
+```bash
+pytest tests/integration/
+```
+
+### Integration tests with a live PostgreSQL container
+
+```bash
+docker-compose up -d db
+pytest tests/integration/
+docker-compose down
+```
+
+### E2E tests (Playwright)
+
+```bash
+# Install Playwright browsers (one-time setup)
+playwright install chromium
+
+# Run E2E tests
+pytest -m e2e
+```
 
 ---
 
-# 🔥 Useful Commands Cheat Sheet
+## CI/CD
 
-| Action                         | Command                                          |
-| ------------------------------- | ------------------------------------------------ |
-| Install Homebrew (Mac)          | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
-| Install Git                     | `brew install git` or Git for Windows installer |
-| Configure Git Global Username  | `git config --global user.name "Your Name"`      |
-| Configure Git Global Email     | `git config --global user.email "you@example.com"` |
-| Clone Repository                | `git clone <repo-url>`                          |
-| Create Virtual Environment     | `python3 -m venv venv`                           |
-| Activate Virtual Environment   | `source venv/bin/activate` / `venv\Scripts\activate.bat` |
-| Install Python Packages        | `pip install -r requirements.txt`               |
-| Build Docker Image              | `docker build -t <image-name> .`                |
-| Run Docker Container            | `docker run -it --rm <image-name>`               |
-| Push Code to GitHub             | `git add . && git commit -m "message" && git push` |
+The GitHub Actions workflow (`.github/workflows/`) runs automatically on every push to `main`:
+
+1. Starts a PostgreSQL service container for integration tests.
+2. Installs Python dependencies and Playwright browsers.
+3. Runs the full test suite with `pytest --cov`.
+4. On success, builds the Docker image and pushes it to Docker Hub as `kks59/601_module11`.
+
+Docker Hub credentials are stored as GitHub repository secrets (`DOCKER_USERNAME`, `DOCKER_PASSWORD`).
 
 ---
 
-# 📋 Notes
+## Module 11 Requirements Summary
 
-- Install **Homebrew** first on Mac.
-- Install and configure **Git** and **SSH** before cloning.
-- Use **Python 3.10+** and **virtual environments** for Python projects.
-- **Docker** is optional depending on the project.
+| Requirement | File(s) |
+|---|---|
+| SQLAlchemy polymorphic model | `app/models/calculation.py` |
+| User model | `app/models/user.py` |
+| Pydantic schemas | `app/schemas/calculation.py` |
+| Factory pattern | `Calculation.create()` in `app/models/calculation.py` |
+| Database config | `app/database.py`, `app/core/config.py` |
+| FastAPI app & routes | `main.py` |
+| Frontend template | `templates/index.html` |
+| Unit tests | `tests/unit/test_calculator.py` |
+| Integration tests | `tests/integration/test_calculation.py` |
+| Schema tests | `tests/integration/test_calculation_schema.py` |
+| API tests | `tests/integration/test_fastapi_calculator.py` |
+| E2E tests | `tests/e2e/test_e2e.py` |
+| Test fixtures | `tests/conftest.py` |
+| CI/CD | `.github/workflows/` |
 
 ---
 
-# 📎 Quick Links
+## Useful Commands
 
-- [Homebrew](https://brew.sh/)
-- [Git Downloads](https://git-scm.com/downloads)
-- [Python Downloads](https://www.python.org/downloads/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [GitHub SSH Setup Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+| Action | Command |
+|---|---|
+| Run app locally | `python main.py` |
+| Pull Docker image | `docker pull kks59/601_module11` |
+| Run Docker container | `docker run -p 8000:8000 kks59/601_module11` |
+| Run all tests | `pytest` |
+| Run tests with coverage | `pytest --cov=app --cov-report=term-missing` |
+| Run E2E tests | `pytest -m e2e` |
+| Install Playwright browsers | `playwright install chromium` |
+
+---
+
+## Links
+
+- **GitHub Repository:** https://github.com/KKS071/assignment11_calculation_model
+- **Docker Hub Image:** https://hub.docker.com/r/kks59/601_module11

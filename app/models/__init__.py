@@ -1,25 +1,7 @@
-# app/models/__init__.py
-"""
-Database Models Package
+# # app/models/__init__.py
 
-This package contains all SQLAlchemy ORM models for the application.
-Models define the structure of database tables and relationships between them.
-"""
-
+# Import both models so SQLAlchemy registers them together and resolves relationships.
 from app.models.user import User
-from app.models.calculation import (
-    Calculation,
-    Addition,
-    Subtraction,
-    Multiplication,
-    Division
-)
+from app.models.calculation import Calculation, Addition, Subtraction, Multiplication, Division
 
-__all__ = [
-    "User",
-    "Calculation",
-    "Addition",
-    "Subtraction",
-    "Multiplication",
-    "Division"
-]
+__all__ = ["User", "Calculation", "Addition", "Subtraction", "Multiplication", "Division"]
